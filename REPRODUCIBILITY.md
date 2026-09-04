@@ -20,7 +20,7 @@ which writes the single-stream CSV the pipeline expects:
 
 ```bash
 python3 scripts/prep_uci_har.py          	# UCI HAR https://archive.ics.uci.edu/dataset/240
-python3 scripts/prep_opportunity.py    	# OPPORTUNITY https://archive.ics.uci.edu/dataset/226
+python3 scripts/prep_opportunity.py		# OPPORTUNITY https://archive.ics.uci.edu/dataset/226
 python3 scripts/prep_hydraulic.py       	# Hydraulic Systems https://archive.ics.uci.edu/dataset/447
 python3 scripts/prep_beijing.py           	# Beijing Air Quality https://archive.ics.uci.edu/dataset/501
 python3 scripts/prep_metro.py            	# Metro Traffic https://archive.ics.uci.edu/dataset/492
