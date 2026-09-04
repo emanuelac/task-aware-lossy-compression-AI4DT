@@ -2,8 +2,7 @@
 
 Every number, table, and figure in the paper derives from the per-dataset
 `results/<dataset>/<stamp>/summary.csv` files produced by the offline
-pipeline and read back by `notebook/results_AI4DT.ipynb`. Nothing is
-hand-typed. Reproducing from scratch is three steps.
+pipeline and read back by `notebook/results_AI4DT.ipynb`. 
 
 ## 1. Environment
 
