@@ -1,0 +1,11 @@
+# Offline pipeline: data prep (scripts/prep_*.py) + evaluation (scripts/run_eval.py)
+numpy>=1.23.0
+pandas>=1.5.0
+scipy>=1.10.0            # DCT/DFT transforms, linear algebra
+scikit-learn>=1.2.0     # PCA compressor
+PyWavelets>=1.4.0       # DWT compressor
+numba>=0.59.0           # compiled banded-DTW 1-NN classifier (src/tasks/_dtw.py)
+
+# Results notebook (notebook/results_AI4DT.ipynb)
+matplotlib>=3.6.0
+pymoo>=0.6.0            # Pareto-front helpers

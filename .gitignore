@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# Raw datasets — public benchmarks, downloaded via scripts/prep_*.py
+# (see REPRODUCIBILITY.md). Only the .gitkeep is tracked.
+data/raw/*
+!data/raw/.gitkeep
+
+# Environment
+.env
