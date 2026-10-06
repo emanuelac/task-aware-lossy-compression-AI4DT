@@ -27,7 +27,7 @@ Pipeline (block-disjoint K-fold × temporal-shift matrix)
     the diagonal (k == j, read by the forward tasks) and the admissible
     `past` cells (k − j ≥ 2). Since normalisation is per-cell, this is
     byte-identical to the full matrix on every reported number at ~half
-    the cost; pass --full-matrix for all K × K cells (§7 diagnostic).
+    the cost; pass --full-matrix for all K × K cells (diagnostic).
 5.  Storage is per (method, train_fold, eval_fold) — equal to
     `bytes_z` only (compressed-payload bytes). Model-parameter bytes
     (AE weights, PCA basis, …) are reported in `bytes_params` for
@@ -302,7 +302,7 @@ def main() -> None:
             "(train_fold - eval_fold >= 2). Because loss_tilde / storage_tilde "
             "normalise within each cell, the reduced run is byte-identical to "
             "the full one on every reported number at ~half the Phase-2 cost. "
-            "Enable only for the notebook's §7 full-matrix diagnostic."
+            "Enable only for the full-matrix diagnostic."
         ),
     )
     args = parser.parse_args()
@@ -373,11 +373,8 @@ def main() -> None:
     (out_dir / "compressors").mkdir(parents=True, exist_ok=True)
 
     # ---- Phase 1: per-fold fit (compressors + tasks) ----------------------
-    # Cache each fold's fitted compressors and tasks so Phase 2 can evaluate
-    # every (train_fold, eval_fold) cell of the temporal-shift matrix without
-    # re-fitting. Compressor fits and β fits are unchanged from the
-    # standard CV; only the inner compress+evaluate loop now spans K × K
-    # cells instead of K diagonals.
+    # Cache each fold's fits so Phase 2 can evaluate every (train, eval) cell
+    # without re-fitting.
     fold_methods: List[List[Any]] = []
     fold_tasks: List[List[TaskEvaluator]] = []
     raw_trains: List[pd.DataFrame] = []
@@ -419,10 +416,8 @@ def main() -> None:
             tasks_proto = tasks
 
     # ---- Phase 2: cross-evaluate (K × K matrix) ---------------------------
-    # For each (train_fold k, eval_fold j): take compressors_k and tasks_k
-    # (β_k, KNN_k), compress raw_test_j, decompress, score tasks_k. Storage
-    # is also per (k, j) because bytes_z depends on the data being
-    # compressed.
+    # For each (train_fold k, eval_fold j): compress/score raw_test_j with
+    # compressors_k and tasks_k. Storage is per (k, j) too.
     all_summaries: List[pd.DataFrame] = []
     all_storage: List[pd.DataFrame] = []
 
@@ -431,16 +426,9 @@ def main() -> None:
         tasks_k = fold_tasks[k]
         print(f"\n[eval] === eval train_fold={k} on all {args.n_folds} test blocks ===")
         for j in range(args.n_folds):
-            # Skip cells no reported metric consumes. Forward tasks read the
-            # diagonal (k == j); `past` reads the admissible below-diagonal
-            # cells (k - j >= 2). The gap-1 below-diagonal cells are excluded
-            # from `past` (adjacent folds share a block, so they would score a
-            # compressor on its own training block) and the above-diagonal
-            # cells feed no aggregation. loss_tilde / storage_tilde normalise
-            # *within* each (train_fold, eval_fold) cell, so the skipped cells
-            # never anchor another cell's normalisation either — the reduced
-            # run is byte-identical to the full one on every reported number.
-            # --full-matrix restores all K×K cells for the §7 diagnostic.
+            # Only cells a metric consumes: diagonal (forward tasks) and
+            # k - j >= 2 (past; gap-1 excluded as adjacent folds share a block).
+            # --full-matrix restores all K×K cells.
             if not args.full_matrix and not (k == j or k - j >= 2):
                 continue
             raw_test_j = raw_tests[j]
@@ -462,16 +450,9 @@ def main() -> None:
 
                 bz = int(m.bytes_z(rec))
                 bp = int(m.bytes_params())
-                # Storage axis = the FRONT-END retained-scalar count, priced
-                # as float64-equivalent bytes (8 * scalars). This strips the
-                # byte-encoding back end (bit-packing / entropy coding) from
-                # every family, so the comparison is over how much
-                # information each family retains at a common precision —
-                # not over which families happen to ship a packed encoder.
-                # `bytes_z` (the real packed payload) is kept as a
-                # transparency column for the secondary byte-CR view.
-                # Model parameters (AE weights, PCA basis) remain excluded:
-                # a one-shot deployment cost, not a per-window one.
+                # Storage = retained-scalar count as float64 bytes (8*scalars),
+                # back-end-agnostic. bytes_z keeps the real packed payload;
+                # model params excluded (one-shot deployment cost).
                 scalars = int(m.retained_scalars(rec))
                 storage = 8 * scalars
                 storage_rows.append({

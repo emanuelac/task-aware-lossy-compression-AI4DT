@@ -161,8 +161,8 @@ class SimPiece(Compressor):
 
     Two parameterisations are supported (mutually exclusive):
 
-    * `target_cr` — train-fit-CR mode (default for §6 visual parity with
-      DCT/DWT/PCA/AE): eps is binary-searched on the training segment so
+    * `target_cr` — train-fit-CR mode (default; matched-CR with the other
+      families): eps is binary-searched on the training segment so
       the achieved CR on training data matches target_cr. Achieved test-CR
       may diverge because segment density is signal-adaptive.
     * `eps_relative` — native error-budget mode (TerseTS / Muñiz-Cuza /
@@ -170,8 +170,7 @@ class SimPiece(Compressor):
       with no inner search. Achieved CR is whatever falls out per fold.
 
     Both variants run inside the same sweep so the two parameterisations
-    can be compared head-to-head (Path A vs Path B in the methodology
-    discussion).
+    can be compared head-to-head.
 
     Parameters
     ----------
